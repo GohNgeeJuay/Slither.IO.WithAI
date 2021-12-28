@@ -1,5 +1,7 @@
 # Slither.IO.WithAI
 
+Currently Work In Progress
+
 ## Introduction
 Simplified game based on the online game called Slither.io. 
 
