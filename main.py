@@ -4,8 +4,7 @@ import pygame, sys, random, os
 import pygame_menu
 from pygame.math import Vector2
 
-blueSnakeColor = (35,200,250)
-orangeSnakeColor = (250,130,10)
+
 class GameMode:
     def __init__(self):
         self.mode = 0
@@ -29,7 +28,6 @@ class Snake:
         self.headRight = pygame.transform.scale(self.headRight,(CELLSIZE,CELLSIZE))
 
     def draw_snake(self):
-
         self.update_head_graphics()
         for index, block in enumerate(self.body):
             #create a rect
@@ -37,7 +35,7 @@ class Snake:
             if index == 0: #if it is the head, create head object
                 screen.blit(self.head,snakeRect)
             else:   #if not head, just use a rectangle
-                pygame.draw.rect( screen, blueSnakeColor,snakeRect)
+                pygame.draw.rect( screen, BLUESNAKECOLOR,snakeRect)
 
     def update_head_graphics(self):
         head_relation = self.body[1] - self.body[0]
@@ -195,9 +193,11 @@ pygame.init()
 gameMode = GameMode()
 CELLSIZE = 15
 CELLNUMBER = 40
+BLUESNAKECOLOR = (35,200,250)
+ORANGESNAKECOLOR = (250,130,10)
 screen = pygame.display.set_mode((CELLNUMBER*CELLSIZE,CELLNUMBER*CELLSIZE))
 clock = pygame.time.Clock()
-apple = pygame.image.load('Graphics/apple.png').convert_alpha()
+apple = pygame.image.load('Graphics/blueApple.png').convert_alpha()
 apple = pygame.transform.scale(apple,(CELLSIZE,CELLSIZE))
 gameFont = pygame.font.Font('Font\omegle\OMEGLE.ttf',25)
 
