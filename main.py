@@ -1,6 +1,7 @@
 #The basic snake game is referencing https://github.com/clear-code-projects/Snake
 #and https://youtu.be/QFvqStqPCRU 
-import pygame, sys, random
+import pygame, sys, random, os
+import pygame_menu
 from pygame.math import Vector2
 
 blueSnakeColor = (35,200,250)
@@ -57,7 +58,6 @@ class Snake:
     def add_block(self):
         self.new_block = True
 
-
 class Fruit: 
     def __init__(self) -> None:
         self.randomize()
@@ -79,6 +79,7 @@ class Main:
     def __init__(self):
         self.snake = Snake()
         self.fruit = Fruit()
+        
 
     def update(self):
         self.snake.move_snake()
@@ -86,8 +87,10 @@ class Main:
         self.check_fail()
 
     def draw_elements(self):
+        self.draw_grass()
         self.fruit.draw_fruit()
         self.snake.draw_snake()
+        self.draw_score()
 
     def check_collision(self):
         if self.fruit.pos == self.snake.body[0]:
@@ -96,6 +99,11 @@ class Main:
             self.fruit.randomize()
             #add another block to snake
             self.snake.add_block()
+
+        #ensure that the fruit does not be on the snake
+        for block in self.snake.body[1:]:
+            if block == self.fruit.pos:
+                self.fruit.randomize()
 
     def check_fail(self):
         #check out side screen
@@ -111,42 +119,90 @@ class Main:
         pygame.quit()
         sys.exit()
 
+    def draw_grass(self):
+        grassColor = (167,209,61)
+        for row in range(cellNumber):
+            if row % 2 == 0:
+                for col in range(cellNumber):
+                    if col % 2 == 0:
+                        grassRect = pygame.Rect(col*cellSize,row*cellSize,cellSize,cellSize)
+                        pygame.draw.rect(screen,grassColor,grassRect)
 
+            else:
+                for col in range(cellNumber):
+                    if col % 2 != 0:
+                        grassRect = pygame.Rect(col*cellSize,row*cellSize,cellSize,cellSize)
+                        pygame.draw.rect(screen,grassColor,grassRect)
+
+    def draw_score(self):
+        scoreText = str(len(self.snake.body) - 3)
+        scoreSurface = gameFont.render(scoreText,True,(56,74,12))
+        scoreX = int(cellSize*cellNumber-60)
+        scoreY = int(cellSize*cellNumber-40)
+        scoreRect = scoreSurface.get_rect(center = (scoreX,scoreY))
+        appleRect = apple.get_rect(midright = (scoreRect.left,scoreRect.centery))
+        bgRect = pygame.Rect(appleRect.left,appleRect.top - 10,appleRect.width + scoreRect.width + 5,appleRect.height + 10)
+
+        pygame.draw.rect(screen, (167,209,61),bgRect)
+        screen.blit(scoreSurface,scoreRect)
+        screen.blit(apple,appleRect)
+        pygame.draw.rect(screen, (56,74,12),bgRect,2)
+
+
+
+def set_mode(value, index):
+    gameMode = index
+
+def start_the_game():
+    print(gameMode)
+    main_game = Main()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == SCREEN_UPDATE:
+                main_game.update()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    if main_game.snake.direction.y != 1:
+                        main_game.snake.direction = Vector2(0,-1)
+                if event.key == pygame.K_DOWN:
+                    if main_game.snake.direction.y != -1:
+                        main_game.snake.direction = Vector2(0,1)
+                if event.key == pygame.K_LEFT:
+                    if main_game.snake.direction.x != 1:
+                        main_game.snake.direction = Vector2(-1,0)
+                if event.key == pygame.K_RIGHT:
+                    if main_game.snake.direction.x != -1:
+                        main_game.snake.direction = Vector2(1,0)
+        screen.fill((116, 196, 45)) #color green for screen
+        main_game.draw_elements()
+        pygame.display.update()
+        clock.tick(60) #Cannot exceed 60 frames
+
+#init game
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
+
+gameMode = 0
 cellSize = 15
 cellNumber = 40
 screen = pygame.display.set_mode((cellNumber*cellSize,cellNumber*cellSize))
 clock = pygame.time.Clock()
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
 apple = pygame.transform.scale(apple,(cellSize,cellSize))
+gameFont = pygame.font.Font('Font\omegle\OMEGLE.ttf',25)
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,120)
 
-main_game = Main()
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == SCREEN_UPDATE:
-            main_game.update()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                if main_game.snake.direction.y != 1:
-                    main_game.snake.direction = Vector2(0,-1)
-            if event.key == pygame.K_DOWN:
-                if main_game.snake.direction.y != -1:
-                    main_game.snake.direction = Vector2(0,1)
-            if event.key == pygame.K_LEFT:
-                if main_game.snake.direction.x != 1:
-                    main_game.snake.direction = Vector2(-1,0)
-            if event.key == pygame.K_RIGHT:
-                if main_game.snake.direction.x != -1:
-                    main_game.snake.direction = Vector2(1,0)
-        
+menu = pygame_menu.Menu('Welcome', 400, 300, theme=pygame_menu.themes.THEME_BLUE)
+menu.add.selector('Mode :', [('Single Player', 1), ('2 players', 2),('VS Bot',3) ], onchange= set_mode)
+menu.add.button('Play', start_the_game)
+menu.add.button('Quit', pygame_menu.events.EXIT)
 
-    screen.fill((116, 196, 45)) #color green for screen
-    main_game.draw_elements()
-    pygame.display.update()
-    clock.tick(60) #Cannot exceed 60 frames
+#Call menu
+menu.mainloop(screen)
+
+
