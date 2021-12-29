@@ -6,6 +6,9 @@ from pygame.math import Vector2
 
 blueSnakeColor = (35,200,250)
 orangeSnakeColor = (250,130,10)
+class GameMode:
+    def __init__(self):
+        self.mode = 0
 
 class Snake:
     def __init__(self):
@@ -14,23 +17,23 @@ class Snake:
         self.new_block = False
         
         self.headUp = pygame.image.load('Graphics\BlueSnakeUp.png').convert_alpha()
-        self.headUp = pygame.transform.scale(self.headUp,(cellSize,cellSize))
+        self.headUp = pygame.transform.scale(self.headUp,(CELLSIZE,CELLSIZE))
 
         self.headDown = pygame.image.load('Graphics\BlueSnakeDown.png').convert_alpha()
-        self.headDown = pygame.transform.scale(self.headDown,(cellSize,cellSize))
+        self.headDown = pygame.transform.scale(self.headDown,(CELLSIZE,CELLSIZE))
 
         self.headLeft = pygame.image.load('Graphics\BlueSnakeLeft.png').convert_alpha()
-        self.headLeft = pygame.transform.scale(self.headLeft,(cellSize,cellSize))
+        self.headLeft = pygame.transform.scale(self.headLeft,(CELLSIZE,CELLSIZE))
 
         self.headRight = pygame.image.load('Graphics\BlueSnakeRight.png').convert_alpha()
-        self.headRight = pygame.transform.scale(self.headRight,(cellSize,cellSize))
+        self.headRight = pygame.transform.scale(self.headRight,(CELLSIZE,CELLSIZE))
 
     def draw_snake(self):
 
         self.update_head_graphics()
         for index, block in enumerate(self.body):
             #create a rect
-            snakeRect = pygame.Rect(int(block.x * cellSize), int(block.y *cellSize),cellSize,cellSize)
+            snakeRect = pygame.Rect(int(block.x * CELLSIZE), int(block.y *CELLSIZE),CELLSIZE,CELLSIZE)
             if index == 0: #if it is the head, create head object
                 screen.blit(self.head,snakeRect)
             else:   #if not head, just use a rectangle
@@ -64,21 +67,22 @@ class Fruit:
 
     def draw_fruit(self):
         #create rect
-        fruitRect = pygame.Rect(int(self.pos.x * cellSize), int(self.pos.y *cellSize),cellSize,cellSize)
+        fruitRect = pygame.Rect(int(self.pos.x * CELLSIZE), int(self.pos.y *CELLSIZE),CELLSIZE,CELLSIZE)
         #draw rect
         #pygame.draw.rect( screen, (214, 39, 39),fruitRect)
         screen.blit(apple,fruitRect)
 
     def randomize(self):
         #Must -1 because its the top left corner of rectangle
-        self.x = random.randint(0,cellNumber-1)
-        self.y = random.randint(0,cellNumber-1)
+        self.x = random.randint(0,CELLNUMBER-1)
+        self.y = random.randint(0,CELLNUMBER-1)
         self.pos = Vector2(self.x,self.y) #Put into the Vector2
 
 class Main:
-    def __init__(self):
+    def __init__(self, gameMode):
         self.snake = Snake()
         self.fruit = Fruit()
+        self.mode = gameMode
         
 
     def update(self):
@@ -107,7 +111,7 @@ class Main:
 
     def check_fail(self):
         #check out side screen
-        if not 0 <= self.snake.body[0].x < cellNumber or not 0 <= self.snake.body[0].y < cellNumber:
+        if not 0 <= self.snake.body[0].x < CELLNUMBER or not 0 <= self.snake.body[0].y < CELLNUMBER:
             self.game_over()
 
         #check if snake hit itself
@@ -121,24 +125,24 @@ class Main:
 
     def draw_grass(self):
         grassColor = (167,209,61)
-        for row in range(cellNumber):
+        for row in range(CELLNUMBER):
             if row % 2 == 0:
-                for col in range(cellNumber):
+                for col in range(CELLNUMBER):
                     if col % 2 == 0:
-                        grassRect = pygame.Rect(col*cellSize,row*cellSize,cellSize,cellSize)
+                        grassRect = pygame.Rect(col*CELLSIZE,row*CELLSIZE,CELLSIZE,CELLSIZE)
                         pygame.draw.rect(screen,grassColor,grassRect)
 
             else:
-                for col in range(cellNumber):
+                for col in range(CELLNUMBER):
                     if col % 2 != 0:
-                        grassRect = pygame.Rect(col*cellSize,row*cellSize,cellSize,cellSize)
+                        grassRect = pygame.Rect(col*CELLSIZE,row*CELLSIZE,CELLSIZE,CELLSIZE)
                         pygame.draw.rect(screen,grassColor,grassRect)
 
     def draw_score(self):
         scoreText = str(len(self.snake.body) - 3)
         scoreSurface = gameFont.render(scoreText,True,(56,74,12))
-        scoreX = int(cellSize*cellNumber-60)
-        scoreY = int(cellSize*cellNumber-40)
+        scoreX = int(CELLSIZE*CELLNUMBER-60)
+        scoreY = int(CELLSIZE*CELLNUMBER-40)
         scoreRect = scoreSurface.get_rect(center = (scoreX,scoreY))
         appleRect = apple.get_rect(midright = (scoreRect.left,scoreRect.centery))
         bgRect = pygame.Rect(appleRect.left,appleRect.top - 10,appleRect.width + scoreRect.width + 5,appleRect.height + 10)
@@ -150,12 +154,14 @@ class Main:
 
 
 
+#################################################START GAME################################################
+
 def set_mode(value, index):
-    gameMode = index
+    gameMode.mode = index
 
 def start_the_game():
-    print(gameMode)
-    main_game = Main()
+    #print(gameMode.mode)
+    main_game = Main(gameMode.mode)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -181,24 +187,25 @@ def start_the_game():
         pygame.display.update()
         clock.tick(60) #Cannot exceed 60 frames
 
+
 #init game
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
 
-gameMode = 0
-cellSize = 15
-cellNumber = 40
-screen = pygame.display.set_mode((cellNumber*cellSize,cellNumber*cellSize))
+gameMode = GameMode()
+CELLSIZE = 15
+CELLNUMBER = 40
+screen = pygame.display.set_mode((CELLNUMBER*CELLSIZE,CELLNUMBER*CELLSIZE))
 clock = pygame.time.Clock()
 apple = pygame.image.load('Graphics/apple.png').convert_alpha()
-apple = pygame.transform.scale(apple,(cellSize,cellSize))
+apple = pygame.transform.scale(apple,(CELLSIZE,CELLSIZE))
 gameFont = pygame.font.Font('Font\omegle\OMEGLE.ttf',25)
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,120)
 
 menu = pygame_menu.Menu('Welcome', 400, 300, theme=pygame_menu.themes.THEME_BLUE)
-menu.add.selector('Mode :', [('Single Player', 1), ('2 players', 2),('VS Bot',3) ], onchange= set_mode)
+menu.add.selector('Mode :', [('2 players', 0),('VS Bot',1)], onchange= set_mode)
 menu.add.button('Play', start_the_game)
 menu.add.button('Quit', pygame_menu.events.EXIT)
 
