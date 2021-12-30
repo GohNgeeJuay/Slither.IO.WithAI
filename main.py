@@ -45,7 +45,6 @@ class Snake:
             self.headRight = pygame.image.load('Graphics\OrangeSnakeRight.png').convert_alpha()
             self.headRight = pygame.transform.scale(self.headRight,(CELLSIZE,CELLSIZE))  
         
-
     def draw_snake(self):
         self.update_head_graphics()
         for index, block in enumerate(self.body):
@@ -109,10 +108,11 @@ class Main:
 
     def draw_elements(self):
         self.draw_grass()
+        self.draw_score()
         for i in range(2):
             self.snakes[i].draw_snake()
             self.fruits[i].draw_fruit()
-        self.draw_score()
+        
 
     def check_eat(self):
         for i in range(2):
@@ -165,18 +165,31 @@ class Main:
 
     def draw_score(self):
 
-        scoreText = str(len(self.snakes[0].body) - 3)
-        scoreSurface = gameFont.render(scoreText,True,(56,74,12))
+        #Score surface for snake 1
+        scoreText1 = str(len(self.snakes[0].body) - 3)
+        scoreSurface1 = gameFont.render(scoreText1,False,(56,74,12))
+
+        #Score surface for snake 2
+        scoreText2 = str(len(self.snakes[1].body) - 3)
+        scoreSurface2 = gameFont.render(scoreText2,False,(56,74,12))
+
+        #Position for the score snake 1
         scoreX = int(CELLSIZE*CELLNUMBER-60)
         scoreY = int(CELLSIZE*CELLNUMBER-40)
-        scoreRect = scoreSurface.get_rect(center = (scoreX,scoreY))
-        appleRect = self.fruits[0].apple.get_rect(midright = (scoreRect.left,scoreRect.centery))
-        bgRect = pygame.Rect(appleRect.left,appleRect.top - 10,appleRect.width + scoreRect.width + 5,appleRect.height + 10)
 
-        pygame.draw.rect(screen, (167,209,61),bgRect)
-        screen.blit(scoreSurface,scoreRect)
-        screen.blit(self.fruits[0].apple,appleRect)
-        pygame.draw.rect(screen, (56,74,12),bgRect,2)
+        scoreRect1 = scoreSurface1.get_rect(center = (scoreX,scoreY))
+        appleRect1 = self.fruits[0].apple.get_rect(midright = (scoreRect1.left,scoreRect1.centery))
+        bgRect1 = pygame.Rect(appleRect1.left,appleRect1.top - 10,appleRect1.width + scoreRect1.width + 10,appleRect1.height + 40)
+
+        scoreRect2 = scoreSurface2.get_rect(midtop= (scoreRect1.centerx,scoreRect1.bottom) )
+        appleRect2 = self.fruits[1].apple.get_rect(midright = (scoreRect2.left,scoreRect2.centery))
+
+        pygame.draw.rect(screen, (167,209,61),bgRect1)
+        screen.blit(scoreSurface1,scoreRect1)            #Display score
+        screen.blit(scoreSurface2,scoreRect2)            #Display score
+        screen.blit(self.fruits[0].apple,appleRect1)     #Display an apple
+        screen.blit(self.fruits[1].apple,appleRect2)     #Display an apple
+        pygame.draw.rect(screen, (56,74,12),bgRect1,2)   #For border
 
 
 
