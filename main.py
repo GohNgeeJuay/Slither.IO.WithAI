@@ -13,7 +13,8 @@ class Snake:
     def __init__(self,num):
         if num == 1:
             self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]        
-            self.direction = Vector2(1,0)
+            self.direction = Vector2(0,0)
+            self.moving = False
             self.new_block = False
             self.color = BLUESNAKECOLOR
             self.headUp = pygame.image.load('Graphics\BlueSnakeUp.png').convert_alpha()
@@ -30,7 +31,8 @@ class Snake:
         
         else: 
             self.body = [Vector2(25,10),Vector2(26,10),Vector2(27,10)]        
-            self.direction = Vector2(-1,0)
+            self.direction = Vector2(0,0)
+            self.moving = False
             self.new_block = False
             self.color = ORANGESNAKECOLOR
             self.headUp = pygame.image.load('Graphics\OrangeSnakeUp.png').convert_alpha()
@@ -64,20 +66,21 @@ class Snake:
 
     def move_snake(self):
         #Each block will follow the block before it and head is in new position
-        if self.new_block == True: #If have eaten something, extend snake
-            body_copy = self.body[:]
-            self.new_block = False
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy[:]
-        else: #If have not eaten something, the snake will not get longer
-            body_copy = self.body[:-1]
-            body_copy.insert(0, body_copy[0] + self.direction)
-            self.body = body_copy[:]
+        if self.moving:
+            if self.new_block == True: #If have eaten something, extend snake
+                body_copy = self.body[:]
+                self.new_block = False
+                body_copy.insert(0, body_copy[0] + self.direction)
+                self.body = body_copy[:]
+            else: #If have not eaten something, the snake will not get longer
+                body_copy = self.body[:-1]
+                body_copy.insert(0, body_copy[0] + self.direction)
+                self.body = body_copy[:]
 
     def add_block(self):
         self.new_block = True
 
-class Fruit: 
+class Fruit:    
     def __init__(self, apple) -> None:
         self.randomize()
         self.apple = apple
@@ -105,6 +108,7 @@ class Main:
             snake.move_snake()
         self.check_eat()
         self.check_fail()
+        
 
     def draw_elements(self):
         self.draw_grass()
@@ -133,8 +137,12 @@ class Main:
             if not 0 <= snake.body[0].x < CELLNUMBER or not 0 <= snake.body[0].y < CELLNUMBER:
                 self.show_game_over(0)
 
+            #print("Head x= " + str(snake.body[0].x))
+            #print("Head y= " + str(snake.body[0].y))
             #check if snake hit itself
             for block in snake.body[1:]:
+                #print("Block x=" + str(block.x))
+                #print("Block y=" + str(block.y))
                 if block == snake.body[0]:
                     self.show_game_over(0)
                 
@@ -173,9 +181,7 @@ class Main:
                 if event.type == pygame.KEYUP:
                     waiting = False
         show_menu()
-
-
-
+    #TODO: Collision of snakes not correct. End suddenly or not ending correctly
     def draw_grass(self):
         grassColor = (167,209,61)
         for row in range(CELLNUMBER):
@@ -236,34 +242,40 @@ def start_the_game():
                 sys.exit()
             if event.type == SCREEN_UPDATE:
                 main_game.update()
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     if main_game.snakes[0].direction.y != 1:
                         main_game.snakes[0].direction = Vector2(0,-1)
+                        main_game.snakes[0].moving = True
                 if event.key == pygame.K_DOWN:
                     if main_game.snakes[0].direction.y != -1:
                         main_game.snakes[0].direction = Vector2(0,1)
+                        main_game.snakes[0].moving = True
                 if event.key == pygame.K_LEFT:
-                    if main_game.snakes[0].direction.x != 1:
+                    if main_game.snakes[0].direction.x != 1 and main_game.snakes[0].moving == True:
                         main_game.snakes[0].direction = Vector2(-1,0)
+                        main_game.snakes[0].moving = True
                 if event.key == pygame.K_RIGHT:
                     if main_game.snakes[0].direction.x != -1:
                         main_game.snakes[0].direction = Vector2(1,0)
-
-            if event.type == pygame.KEYDOWN:
+                        main_game.snakes[0].moving = True
                 if event.key == pygame.K_w:
                     if main_game.snakes[1].direction.y != 1:
                         main_game.snakes[1].direction = Vector2(0,-1)
+                        main_game.snakes[1].moving = True
                 if event.key == pygame.K_s:
                     if main_game.snakes[1].direction.y != -1:
                         main_game.snakes[1].direction = Vector2(0,1)
+                        main_game.snakes[1].moving = True
                 if event.key == pygame.K_a:
                     if main_game.snakes[1].direction.x != 1:
                         main_game.snakes[1].direction = Vector2(-1,0)
+                        main_game.snakes[1].moving = True
                 if event.key == pygame.K_d:
-                    if main_game.snakes[1].direction.x != -1:
+                    if main_game.snakes[1].direction.x != -1 and main_game.snakes[1].moving == True:
                         main_game.snakes[1].direction = Vector2(1,0)
+                        main_game.snakes[1].moving = True               
+                
         screen.fill((116, 196, 45)) #color green for screen
         main_game.draw_elements()
         pygame.display.update()
