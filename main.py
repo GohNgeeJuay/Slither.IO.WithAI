@@ -113,7 +113,6 @@ class Main:
             self.snakes[i].draw_snake()
             self.fruits[i].draw_fruit()
         
-
     def check_eat(self):
         for i in range(2):
             if self.fruits[i].pos == self.snakes[i].body[0]:
@@ -132,21 +131,50 @@ class Main:
         for index,snake in enumerate(self.snakes):
             #check out side screen
             if not 0 <= snake.body[0].x < CELLNUMBER or not 0 <= snake.body[0].y < CELLNUMBER:
-                self.game_over()
+                self.show_game_over(0)
 
             #check if snake hit itself
             for block in snake.body[1:]:
                 if block == snake.body[0]:
-                    self.game_over()
+                    self.show_game_over(0)
                 
                 #check if snake did not hit the other snake
                 if block == self.snakes[(index + 1) % 2].body[0]:
-                    self.game_over()
+                    self.show_game_over(index+1)
+
+    def show_game_over(self, index):
+        if index == 0:
+            gameOverText = "Its a Draw!"
+            if str(len(self.snakes[0].body) - 3) > str(len(self.snakes[1].body) - 3):
+                gameOverText = "Player 1 Wins!"
+            elif str(len(self.snakes[0].body) - 3) < str(len(self.snakes[1].body) - 3):
+                gameOverText = "Player 1 Wins!"
+
+        elif index == 1:
+            gameOverText = "Player 1 Wins!"
+        elif index == 2:
+            gameOverText = "Player 2 Wins!"
+        
+        gameOverSurface1 = gameFont.render(gameOverText,True,(0,0,0))
+        gameOverSurface2 = gameFont.render("Press any key to return to menu",True,(0,0,0))
+        gameOverRect1 = gameOverSurface1.get_rect(center = ( (CELLSIZE*CELLNUMBER/2),(CELLSIZE*CELLNUMBER/2)))
+        gameOverRect2 = gameOverSurface2.get_rect(center = ( gameOverRect1.centerx,gameOverRect1.bottom+10))
+        screen.blit(gameOverSurface1,gameOverRect1) 
+        screen.blit(gameOverSurface2,gameOverRect2) 
 
 
-    def game_over(self):
-        pygame.quit()
-        sys.exit()
+        pygame.display.flip()
+        waiting = True
+        while waiting:         
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYUP:
+                    waiting = False
+        show_menu()
+
+
 
     def draw_grass(self):
         grassColor = (167,209,61)
@@ -167,11 +195,11 @@ class Main:
 
         #Score surface for snake 1
         scoreText1 = str(len(self.snakes[0].body) - 3)
-        scoreSurface1 = gameFont.render(scoreText1,False,(56,74,12))
+        scoreSurface1 = gameFont.render(scoreText1,True,(56,74,12))
 
         #Score surface for snake 2
         scoreText2 = str(len(self.snakes[1].body) - 3)
-        scoreSurface2 = gameFont.render(scoreText2,False,(56,74,12))
+        scoreSurface2 = gameFont.render(scoreText2,True,(56,74,12))
 
         #Position for the score snake 1
         scoreX = int(CELLSIZE*CELLNUMBER-60)
@@ -186,11 +214,12 @@ class Main:
 
         pygame.draw.rect(screen, (167,209,61),bgRect1)
         screen.blit(scoreSurface1,scoreRect1)            #Display score
-        screen.blit(scoreSurface2,scoreRect2)            #Display score
+        screen.blit(scoreSurface2,scoreRect2)            
         screen.blit(self.fruits[0].apple,appleRect1)     #Display an apple
-        screen.blit(self.fruits[1].apple,appleRect2)     #Display an apple
+        screen.blit(self.fruits[1].apple,appleRect2)     
         pygame.draw.rect(screen, (56,74,12),bgRect1,2)   #For border
 
+   
 
 
 #################################################START GAME################################################
@@ -199,7 +228,6 @@ def set_mode(value, index):
     gameMode.mode = index
 
 def start_the_game():
-    #print(gameMode.mode)
     main_game = Main(gameMode.mode,apple1=blueApple,apple2=redApple)
     while True:
         for event in pygame.event.get():
@@ -265,13 +293,15 @@ SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,120)
 
 
-menu = pygame_menu.Menu('Welcome to Slither', 400, 300, theme=pygame_menu.themes.THEME_GREEN)
-menu.add.selector('Mode :', [('2 players', 0),('VS Bot',1)], onchange= set_mode)
-menu.add.button('Play', start_the_game)
-menu.add.button('Quit', pygame_menu.events.EXIT)
+def show_menu():
+    menu = pygame_menu.Menu('Welcome to Slither', 400, 300, theme=pygame_menu.themes.THEME_GREEN)
+    menu.add.selector('Mode :', [('2 players', 0),('VS Bot',1)], onchange= set_mode)
+    menu.add.button('Play', start_the_game)
+    menu.add.button('Quit', pygame_menu.events.EXIT)
 
-#Call menu
-menu.mainloop(screen)
+    #Call menu
+    menu.mainloop(screen)
 
+show_menu()
 
 
