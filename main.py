@@ -135,7 +135,10 @@ class Main:
         for index,snake in enumerate(self.snakes):
             #check out side screen
             if not 0 <= snake.body[0].x < CELLNUMBER or not 0 <= snake.body[0].y < CELLNUMBER:
-                self.show_game_over(0)
+                if index == 0:
+                    self.show_game_over(2)
+                else:
+                    self.show_game_over(1)
 
             #print("Head x= " + str(snake.body[0].x))
             #print("Head y= " + str(snake.body[0].y))
@@ -145,27 +148,23 @@ class Main:
                 #print("Block y=" + str(block.y))
 
                 if idx != 0 and block == snake.body[0]:
-                    self.show_game_over(0)
+                    if index == 0:
+                        self.show_game_over(2)
+                    else:
+                        self.show_game_over(1)
         
                 #check if other snake head did not hit this snake
                 if self.snakes[(index + 1) % 2].body[0] == block:
                     self.show_game_over(index+1)
 
     def show_game_over(self, winner):
-        if winner == 0:
-            gameOverText = "Its a Draw!"
-            if str(len(self.snakes[0].body) - 3) > str(len(self.snakes[1].body) - 3):
-                gameOverText = "Player 1 Wins!"
-            elif str(len(self.snakes[0].body) - 3) < str(len(self.snakes[1].body) - 3):
-                gameOverText = "Player 1 Wins!"
-
-        elif winner == 1:
+        if winner == 1:
             gameOverText = "Player 1 Wins!"
         elif winner == 2:
             gameOverText = "Player 2 Wins!"
         
         gameOverSurface1 = gameFont.render(gameOverText,True,(0,0,0))
-        gameOverSurface2 = gameFont.render("Press any key to return to menu",True,(0,0,0))
+        gameOverSurface2 = gameFont.render("Press the return key to return to menu",True,(0,0,0))
         gameOverRect1 = gameOverSurface1.get_rect(center = ( (CELLSIZE*CELLNUMBER/2),(CELLSIZE*CELLNUMBER/2)))
         gameOverRect2 = gameOverSurface2.get_rect(center = ( gameOverRect1.centerx,gameOverRect1.bottom+10))
         screen.blit(gameOverSurface1,gameOverRect1) 
@@ -179,10 +178,10 @@ class Main:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.KEYUP:
-                    waiting = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        waiting = False
         show_menu()
-    #TODO: Collision of snakes not correct. End suddenly or not ending correctly
     def draw_grass(self):
         grassColor = (167,209,61)
         for row in range(CELLNUMBER):
