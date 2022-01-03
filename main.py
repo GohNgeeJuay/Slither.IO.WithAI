@@ -1,6 +1,6 @@
 #The basic snake game is referencing https://github.com/clear-code-projects/Snake
 #and https://youtu.be/QFvqStqPCRU 
-import pygame, sys, random, os
+import pygame, sys, random, os, threading
 import pygame_menu
 from pygame.math import Vector2
 
@@ -104,16 +104,18 @@ class Main:
         self.mode = gameMode
         
     def update(self):
+        self.check_fail()
         for snake in self.snakes:
             snake.move_snake()
         self.check_eat()
-        self.check_fail()
+        
         
 
     def draw_elements(self):
         self.draw_grass()
         self.draw_score()
-        for i in range(2):
+        #TODO: snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying. Might have to fix using multithreading
+        for i in range(2):    
             self.snakes[i].draw_snake()
             self.fruits[i].draw_fruit()
         
@@ -139,21 +141,19 @@ class Main:
                     self.show_game_over(2)
                 else:
                     self.show_game_over(1)
-
-            #print("Head x= " + str(snake.body[0].x))
-            #print("Head y= " + str(snake.body[0].y))
-            #check if snake hit itself
-            for idx, block in enumerate(snake.body[:]):
-                #print("Block x=" + str(block.x))
-                #print("Block y=" + str(block.y))
-
+            
+            for idx, block in enumerate(snake.body[:]):                
+                #check if snake hit itself
                 if idx != 0 and block == snake.body[0]:
                     if index == 0:
                         self.show_game_over(2)
                     else:
                         self.show_game_over(1)
         
-                #check if other snake head did not hit this snake
+                #TODO: Problem might come from here due to for loop sequential check to see if the other snake has
+                #hit. First snake always have priority over the other snake.
+                #Possible solution, multi threading to see which snake's head hit the other snakes body first
+                #check if other snake head hit this snake
                 if self.snakes[(index + 1) % 2].body[0] == block:
                     self.show_game_over(index+1)
 
