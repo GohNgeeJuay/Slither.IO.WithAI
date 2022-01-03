@@ -109,8 +109,6 @@ class Main:
             snake.move_snake()
         self.check_eat()
         
-        
-
     def draw_elements(self):
         self.draw_grass()
         self.draw_score()
@@ -134,28 +132,20 @@ class Main:
                         self.fruits[i].randomize()
 
     def check_fail(self):
-        for index,snake in enumerate(self.snakes):
-            #check out side screen
-            if not 0 <= snake.body[0].x < CELLNUMBER or not 0 <= snake.body[0].y < CELLNUMBER:
-                if index == 0:
-                    self.show_game_over(2)
-                else:
-                    self.show_game_over(1)
-            
-            for idx, block in enumerate(snake.body[:]):                
-                #check if snake hit itself
-                if idx != 0 and block == snake.body[0]:
-                    if index == 0:
-                        self.show_game_over(2)
-                    else:
-                        self.show_game_over(1)
-        
-                #TODO: Problem might come from here due to for loop sequential check to see if the other snake has
-                #hit. First snake always have priority over the other snake.
-                #Possible solution, multi threading to see which snake's head hit the other snakes body first
-                #check if other snake head hit this snake
-                if self.snakes[(index + 1) % 2].body[0] == block:
-                    self.show_game_over(index+1)
+        collision = []
+        #threadLock = threading.Lock()
+        snakeThr1 = SnakeFailThread(self.snakes[0],self.snakes[1],0,collision)
+        snakeThr2 = SnakeFailThread(self.snakes[1],self.snakes[0],1,collision)
+
+        snakeThr1.start()
+        snakeThr2.start()
+
+        snakeThr1.join()
+        snakeThr2.join()
+        print(collision)
+        if len(collision) > 0:
+            self.show_game_over(collision[0])
+
 
     def show_game_over(self, winner):
         if winner == 1:
@@ -182,6 +172,7 @@ class Main:
                     if event.key == pygame.K_RETURN:
                         waiting = False
         show_menu()
+
     def draw_grass(self):
         grassColor = (167,209,61)
         for row in range(CELLNUMBER):
@@ -226,7 +217,38 @@ class Main:
         pygame.draw.rect(screen, (56,74,12),bgRect1,2)   #For border
 
    
+class SnakeFailThread(threading.Thread):
+    def __init__(self, currentSnake: Snake, otherSnake: Snake, index: int, result):
+        threading.Thread.__init__(self)
+        self.currentSnake = currentSnake
+        self.otherSnake = otherSnake 
+        self.snakeIndex = index
+        self.result = result
 
+    def run(self):
+        
+        if not 0 <= self.currentSnake.body[0].x < CELLNUMBER or not 0 <= self.currentSnake.body[0].y < CELLNUMBER:
+            if self.snakeIndex == 0:
+                self.result.append(2)
+                return 
+            else:
+                self.result.append(1)
+                return
+            
+        for idx, block in enumerate(self.currentSnake.body[:]):                
+            #check if snake hit itself
+            if idx != 0 and block == self.currentSnake.body[0]:
+                if self.snakeIndex == 0:
+                    self.result.append(2)
+                    return
+                else:
+                    self.result.append(1)
+                    return
+
+            if self.otherSnake.body[0] == block:
+                # print("checking")
+                self.result.append(self.snakeIndex+1)
+                return
 
 #################################################START GAME################################################
 
