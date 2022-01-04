@@ -114,10 +114,8 @@ class Main:
     def draw_elements(self):
         self.draw_grass()
         self.draw_score()
-        #TODO: snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying. Might have to fix using multithreading
-        # threading.Thread(target= self.draw_snake)
-        # threading.Thread(target= self.draw_snake)
-        
+        #TODO: snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying in ascen ding order. 
+        # Might have to fix using multithreading
         for i in range(2):    
             self.snakes[i].draw_snake()
             self.fruits[i].draw_fruit()
@@ -145,11 +143,9 @@ class Main:
         snakeThr1.start()
         snakeThr1.join()
         snakeThr2.join()
-
-        print(collision)
+        
         if len(collision) > 0:
             self.show_game_over(collision[0])
-
 
     def show_game_over(self, winner):
         if winner == 1:
@@ -232,21 +228,19 @@ class SnakeFailThread(threading.Thread):
     def run(self):
         if not 0 <= self.currentSnake.body[0].x < CELLNUMBER or not 0 <= self.currentSnake.body[0].y < CELLNUMBER:
             if self.snakeIndex == 0:
+                print("out of map")
                 self.result.append(2)
-                return 
             else:
+                print("out of map")
                 self.result.append(1)
-                return
         
         for idx, block in enumerate(self.currentSnake.body[:]):                
             #check if snake hit itself
             if idx != 0 and block == self.currentSnake.body[0]:
                 if self.snakeIndex == 0:
                     self.result.append(2)
-                    return
                 else:
                     self.result.append(1)
-                    return
         
         #Barrier to wait until both threads are at this current point to ensure fairness. Note: not working. 
         #First snake is still prioritized
@@ -255,7 +249,6 @@ class SnakeFailThread(threading.Thread):
             if self.otherSnake.body[0] == block:
                 #print('Snake %s found collision at: %s \n' % (self.snakeIndex, ctime()))
                 self.result.append(self.snakeIndex+1)
-                return
 
 #################################################START GAME################################################
 
