@@ -135,17 +135,27 @@ class Main:
                         self.fruits[i].randomize()
 
     def check_fail(self):
-        collision = []
-        snakeThr1 = SnakeFailThread(self.snakes[0],self.snakes[1],0,collision)
-        snakeThr2 = SnakeFailThread(self.snakes[1],self.snakes[0],1,collision)
-
-        snakeThr2.start()
-        snakeThr1.start()
-        snakeThr1.join()
-        snakeThr2.join()
+        for index,snake in enumerate(self.snakes):
+            #check out of bounds
+            if not 0 <= snake.body[0].x < CELLNUMBER or not 0 <= snake.body[0].y < CELLNUMBER:
+                if index == 0:
+                    self.show_game_over(2)
+                else:
+                    self.show_game_over(1)
+            
+            #check if snake's head has hit it's own body
+            for block in snake.body[1:]:                    
+                if block == snake.body[0]:
+                    if index == 0:
+                        self.show_game_over(2)
+                    else:
+                        self.show_game_over(1)
         
-        if len(collision) > 0:
-            self.show_game_over(collision[0])
+            #check if head of the other snake has hit any part of this snake's body
+            for idx, block in enumerate(snake.body[:]):
+                if self.snakes[(index + 1) % 2].body[0] == block:
+                    #print('Snake %s found collision at: %s \n' % (self.snakeIndex, ctime()))
+                    self.show_game_over(index+1)
 
     def show_game_over(self, winner):
         if winner == 1:
@@ -226,29 +236,7 @@ class SnakeFailThread(threading.Thread):
         self.result = result
 
     def run(self):
-        if not 0 <= self.currentSnake.body[0].x < CELLNUMBER or not 0 <= self.currentSnake.body[0].y < CELLNUMBER:
-            if self.snakeIndex == 0:
-                print("out of map")
-                self.result.append(2)
-            else:
-                print("out of map")
-                self.result.append(1)
-        
-        for idx, block in enumerate(self.currentSnake.body[:]):                
-            #check if snake hit itself
-            if idx != 0 and block == self.currentSnake.body[0]:
-                if self.snakeIndex == 0:
-                    self.result.append(2)
-                else:
-                    self.result.append(1)
-        
-        #Barrier to wait until both threads are at this current point to ensure fairness. Note: not working. 
-        #First snake is still prioritized
-        barrier.wait()
-        for idx, block in enumerate(self.currentSnake.body[:]):
-            if self.otherSnake.body[0] == block:
-                #print('Snake %s found collision at: %s \n' % (self.snakeIndex, ctime()))
-                self.result.append(self.snakeIndex+1)
+        pass
 
 #################################################START GAME################################################
 
@@ -309,8 +297,8 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
 
 gameMode = GameMode()
-CELLSIZE = 15
-CELLNUMBER = 40
+CELLSIZE = 20
+CELLNUMBER = 30
 BLUESNAKECOLOR = (35,200,250)
 ORANGESNAKECOLOR = (250,130,10)
 
