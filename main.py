@@ -1,6 +1,6 @@
 #The basic snake game is referencing https://github.com/clear-code-projects/Snake
 #and https://youtu.be/QFvqStqPCRU 
-import pygame, sys, random, os, threading
+import pygame, sys, random, os
 import pygame_menu
 from time import ctime
 from pygame.math import Vector2
@@ -227,17 +227,6 @@ class Main:
         pygame.draw.rect(screen, (56,74,12),bgRect1,2)   #For border
 
    
-class SnakeFailThread(threading.Thread):
-    def __init__(self, currentSnake: Snake, otherSnake: Snake, index: int, result):
-        threading.Thread.__init__(self)
-        self.currentSnake = currentSnake
-        self.otherSnake = otherSnake 
-        self.snakeIndex = index
-        self.result = result
-
-    def run(self):
-        pass
-
 #################################################START GAME################################################
 
 def set_mode(value, index):
@@ -313,7 +302,6 @@ gameFont = pygame.font.Font('Font\omegle\OMEGLE.ttf',25)
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,120)
-barrier = threading.Barrier(2)
 
 def show_menu():
     menu = pygame_menu.Menu('Welcome to Slither', 400, 300, theme=pygame_menu.themes.THEME_GREEN)
