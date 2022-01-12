@@ -3,6 +3,7 @@
 import pygame, sys, random, os
 import pygame_menu
 from pygame.math import Vector2
+import multiprocessing
 class GameMode:
     def __init__(self):
         self.mode = 0
@@ -17,20 +18,24 @@ class Snake:
             self.color = BLUESNAKECOLOR
             
             headUp = pygame.image.load('Graphics\BlueSnakeUp.png').convert_alpha()
-            self.headUp = pygame.transform.scale(headUp,(CELLSIZE,CELLSIZE))
-            #self.headUp = pygame.image.tostring(headUp,"RGB")
+            headUp = pygame.transform.scale(headUp,(CELLSIZE,CELLSIZE))
+            self.headUpStr = pygame.image.tostring(headUp,"RGB")
+            self.headUpSize = headUp.get_size()
 
             headDown = pygame.image.load('Graphics\BlueSnakeDown.png').convert_alpha()
-            self.headDown = pygame.transform.scale(headDown,(CELLSIZE,CELLSIZE))
-            #self.headDown = pygame.image.tostring(headDown,"RGB")
+            headDown = pygame.transform.scale(headDown,(CELLSIZE,CELLSIZE))
+            self.headDownStr = pygame.image.tostring(headDown,"RGB")
+            self.headDownSize = headDown.get_size()
 
             headLeft = pygame.image.load('Graphics\BlueSnakeLeft.png').convert_alpha()
-            self.headLeft = pygame.transform.scale(headLeft,(CELLSIZE,CELLSIZE))
-            #self.headLeft = pygame.image.tostring(headLeft,"RGB")
+            headLeft = pygame.transform.scale(headLeft,(CELLSIZE,CELLSIZE))
+            self.headLeftStr = pygame.image.tostring(headLeft,"RGB")
+            self.headLeftSize = headLeft.get_size()
 
             headRight = pygame.image.load('Graphics\BlueSnakeRight.png').convert_alpha()
-            self.headRight = pygame.transform.scale(headRight,(CELLSIZE,CELLSIZE))
-            #self.headRight = pygame.image.tostring(headRight,"RGB")
+            headRight = pygame.transform.scale(headRight,(CELLSIZE,CELLSIZE))
+            self.headRightStr = pygame.image.tostring(headRight,"RGB")
+            self.headRightSize = headRight.get_size()
 
         else: 
             self.body = [Vector2(25,10),Vector2(26,10),Vector2(27,10)]        
@@ -38,28 +43,45 @@ class Snake:
             self.moving = False
             self.new_block = False
             self.color = ORANGESNAKECOLOR
+
             headUp = pygame.image.load('Graphics\OrangeSnakeUp.png').convert_alpha()
-            self.headUp = pygame.transform.scale(headUp,(CELLSIZE,CELLSIZE))
-            #self.headUp = pygame.image.tostring(headUp,"RGB")
+            headUp = pygame.transform.scale(headUp,(CELLSIZE,CELLSIZE))
+            self.headUpStr = pygame.image.tostring(headUp,"RGB")
+            self.headUpSize = headUp.get_size()
 
             headDown = pygame.image.load('Graphics\OrangeSnakeDown.png').convert_alpha()
-            self.headDown = pygame.transform.scale(headDown,(CELLSIZE,CELLSIZE))
-            #self.headDown = pygame.image.tostring(headDown,"RGB")
+            headDown = pygame.transform.scale(headDown,(CELLSIZE,CELLSIZE))
+            self.headDownStr = pygame.image.tostring(headDown,"RGB")
+            self.headDownSize = headDown.get_size()
 
             headLeft = pygame.image.load('Graphics\OrangeSnakeLeft.png').convert_alpha()
-            self.headLeft = pygame.transform.scale(headLeft,(CELLSIZE,CELLSIZE))
-            #self.headLeft = pygame.image.tostring(headLeft,"RGB")
+            headLeft = pygame.transform.scale(headLeft,(CELLSIZE,CELLSIZE))
+            self.headLeftStr = pygame.image.tostring(headLeft,"RGB")
+            self.headLeftSize = headLeft.get_size()
 
             headRight = pygame.image.load('Graphics\OrangeSnakeRight.png').convert_alpha()
-            self.headRight = pygame.transform.scale(headRight,(CELLSIZE,CELLSIZE))  
-            #self.headRight = pygame.image.tostring(headRight,"RGB")
+            headRight = pygame.transform.scale(headRight,(CELLSIZE,CELLSIZE))  
+            self.headRightStr = pygame.image.tostring(headRight,"RGB")
+            self.headRightSize = headRight.get_size()
 
     def update_head_graphics(self):
         head_relation = self.body[1] - self.body[0]
-        if head_relation == Vector2(1,0): self.head = self.headLeft
-        elif head_relation == Vector2(-1,0): self.head = self.headRight
-        elif head_relation == Vector2(0,1): self.head = self.headUp
-        elif head_relation == Vector2(0,-1): self.head = self.headDown
+        if head_relation == Vector2(1,0):
+            #self.head = self.headLeft
+            self.headStr = self.headLeftStr
+            self.headSize = self.headLeftSize
+        elif head_relation == Vector2(-1,0): 
+            #self.head = self.headRight
+            self.headStr = self.headRightStr
+            self.headSize = self.headRightSize
+        elif head_relation == Vector2(0,1):
+            #self.head = self.headUp
+            self.headStr = self.headUpStr
+            self.headSize = self.headUpSize
+        elif head_relation == Vector2(0,-1):
+            #self.head = self.headDown
+            self.headStr = self.headDownStr
+            self.headSize = self.headDownSize
 
     def move_snake(self):
         #Each block will follow the block before it and head is in new position
@@ -77,10 +99,21 @@ class Snake:
     def add_block(self):
         self.new_block = True
 
+    def draw_snake(self):
+        self.update_head_graphics()
+        for index, block in enumerate(self.body):
+            #create a rect
+            snakeRect = pygame.Rect(int(block.x * CELLSIZE), int(block.y *CELLSIZE),CELLSIZE,CELLSIZE)
+            if index == 0: #if it is the head, create head object
+                screen.blit(pygame.image.fromstring(self.headStr,self.headSize,"RGB"),snakeRect)
+                #screen.blit(self.head,snakeRect)
+            else:   #if not head, just use a rectangle
+                pygame.draw.rect(screen, self.color,snakeRect)
 class Fruit:    
-    def __init__(self, apple) -> None:
+    def __init__(self, apple: pygame.Surface) -> None:
         self.randomize()
-        self.apple = apple
+        self.appleStr = pygame.image.tostring(apple,"RGB")
+        self.appleSize = apple.get_size()
 
     def randomize(self):
         #Must -1 because its the top left corner of rectangle
@@ -88,28 +121,16 @@ class Fruit:
         self.y = random.randint(0,CELLNUMBER-1)
         self.pos = Vector2(self.x,self.y) #Put into the Vector2
 
-
-def draw_fruit(fruit: Fruit):
-    #create rect
-    fruitRect = pygame.Rect(int(fruit.pos.x * CELLSIZE), int(fruit.pos.y *CELLSIZE),CELLSIZE,CELLSIZE)
-    #draw rect
-    screen.blit(fruit.apple,fruitRect)
-
-def draw_snake(snake: Snake):
-    snake.update_head_graphics()
-    for index, block in enumerate(snake.body):
-        #create a rect
-        snakeRect = pygame.Rect(int(block.x * CELLSIZE), int(block.y *CELLSIZE),CELLSIZE,CELLSIZE)
-        if index == 0: #if it is the head, create head object
-            #screen.blit(pygame.image.fromstring(snake.head),snakeRect)
-            screen.blit(snake.head,snakeRect)
-        else:   #if not head, just use a rectangle
-            pygame.draw.rect(screen, snake.color,snakeRect)
-
+    def draw_fruit(self):
+        #create rect
+        fruitRect = pygame.Rect(int(self.pos.x * CELLSIZE), int(self.pos.y *CELLSIZE),CELLSIZE,CELLSIZE)
+        screen.blit(pygame.image.fromstring(self.appleStr,self.appleSize,"RGB"),fruitRect)
+        #draw rect
+        #screen.blit(self.apple,fruitRect)
 
 class Main:
    
-    def __init__(self, gameMode,apple1,apple2):
+    def __init__(self, gameMode,apple1: pygame.Surface,apple2: pygame.Surface):
         self.snakes = [Snake(1),Snake(2)]
         self.fruits = [Fruit(apple1), Fruit(apple2)]
         self.mode = gameMode
@@ -122,21 +143,29 @@ class Main:
         
     def draw_elements(self):
         self.draw_grass()
-        self.draw_score()
+        #self.draw_score()
+        
+        if __name__ == '__main__':
+            p1 = multiprocessing.Process(target= self.snakes[0].draw_snake)
+            p2 = multiprocessing.Process(target= self.snakes[1].draw_snake)
+            p3 = multiprocessing.Process(target= self.fruits[0].draw_fruit)
+            p4 = multiprocessing.Process(target= self.fruits[1].draw_fruit)
 
-        # snakePool.map(draw_snake,self.snakes) 
-        # fruitPool.map(draw_fruit,self.fruits)       
-        # #p2 = Process(target=self.draw_snake,args= self.snakes[1])
-        # #p3 = Process(target=self.draw_fruit,args= self.fruits[0])
-        # #p4 = Process(target=self.draw_fruit,args= self.fruits[1])
- 
-        # snakePool.map(self.draw_snake,self.snakes)
-        # fruitPool.map(self.draw_fruit,self.fruits)
+            p1.start()
+            p2.start()
+            p3.start()
+            p4.start()
+            #TypeError: cannot pickle 'pygame.Surface' object
+            p1.join()
+            p2.join()
+            p3.join()
+            p4.join()
+
         #TODO: snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying in ascen ding order. 
         # Might have to fix using multithreading
-        for i in range(2):    
-            draw_snake(self.snakes[i])
-            draw_fruit(self.fruits[i])
+        # for i in range(2):    
+        #     draw_snake(self.snakes[i])
+        #     draw_fruit(self.fruits[i])
         
     def check_eat(self):
         for i in range(2):
@@ -231,6 +260,8 @@ class Main:
         scoreY = int(CELLSIZE*CELLNUMBER-40)
 
         scoreRect1 = scoreSurface1.get_rect(center = (scoreX,scoreY))
+        apple = pygame.image.fromstring(self.appleStr,self.appleSize,"RGB")
+
         appleRect1 = self.fruits[0].apple.get_rect(midright = (scoreRect1.left,scoreRect1.centery))
         bgRect1 = pygame.Rect(appleRect1.left,appleRect1.top - 10,appleRect1.width + scoreRect1.width + 10,appleRect1.height + 40)
 
@@ -252,6 +283,7 @@ def set_mode(value, index):
 
 def start_the_game():
     main_game = Main(gameMode.mode,apple1=blueApple,apple2=redApple)
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -332,6 +364,7 @@ def show_menu():
 
 if __name__ == '__main__':
     show_menu()
+
 
 
 
