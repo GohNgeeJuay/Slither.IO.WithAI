@@ -11,7 +11,8 @@ class GameMode:
 class Snake:    
     def __init__(self,num,cellSize,blueColor,orangeColor,screen):
         self.cellSize = cellSize
-        self.screen = screen
+        self.screenStr = pygame.image.tostring(screen,"RGB")
+        self.screenSize = screen.get_size()
         if num == 1:
             self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]        
             self.direction = Vector2(0,0)
@@ -107,10 +108,11 @@ class Snake:
             #create a rect
             snakeRect = pygame.Rect(int(block.x * self.cellSize), int(block.y *self.cellSize),self.cellSize,self.cellSize)
             if index == 0: #if it is the head, create head object
-                self.screen.blit(pygame.image.fromstring(self.headStr,self.headSize,"RGB"),snakeRect)
+                screen = pygame.image.fromstring(self.screenStr,self.screenSize,"RGB")
+                screen.blit(pygame.image.fromstring(self.headStr,self.headSize,"RGB"),snakeRect)
                 #screen.blit(self.head,snakeRect)
             else:   #if not head, just use a rectangle
-                pygame.draw.rect(self.screen, self.color,snakeRect)
+                pygame.draw.rect(screen, self.color,snakeRect)
 
 class Fruit:    
     def __init__(self, apple: pygame.Surface, cellNum, cellSize,screen) -> None:
@@ -119,7 +121,8 @@ class Fruit:
         self.appleSize = apple.get_size()
         self.cellNum = cellNum
         self.cellSize = cellSize
-        self.screen = screen
+        self.screenStr = pygame.image.tostring(screen,"RGB")
+        self.screenSize = screen.get_size()
 
     def randomize(self,cellNum):
         #Must -1 because its the top left corner of rectangle
@@ -129,8 +132,9 @@ class Fruit:
 
     def draw_fruit(self):
         #create rect
+        screen = pygame.image.fromstring(self.screenStr,self.screenSize,"RGB")
         fruitRect = pygame.Rect(int(self.pos.x * self.cellSize), int(self.pos.y *self.cellSize),self.cellSize,self.cellSize)
-        self.screen.blit(pygame.image.fromstring(self.appleStr,self.appleSize,"RGB"),fruitRect)
+        screen.blit(pygame.image.fromstring(self.appleStr,self.appleSize,"RGB"),fruitRect)
 
 class Main:
    
