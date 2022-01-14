@@ -1,6 +1,6 @@
 #The basic snake game is referencing https://github.com/clear-code-projects/Snake
 #and https://youtu.be/QFvqStqPCRU 
-import pygame, sys, random, os, threading
+import pygame, sys, random, os
 import pygame_menu
 from pygame.math import Vector2
 
@@ -109,8 +109,6 @@ class Main:
             snake.move_snake()
         self.check_eat()
         
-        
-
     def draw_elements(self):
         self.draw_grass()
         self.draw_score()
@@ -150,10 +148,7 @@ class Main:
                     else:
                         self.show_game_over(1)
         
-                #TODO: Problem might come from here due to for loop sequential check to see if the other snake has
-                #hit. First snake always have priority over the other snake.
-                #Possible solution, multi threading to see which snake's head hit the other snakes body first
-                #check if other snake head hit this snake
+                #TODO: Sequential check
                 if self.snakes[(index + 1) % 2].body[0] == block:
                     self.show_game_over(index+1)
 
@@ -170,7 +165,6 @@ class Main:
         screen.blit(gameOverSurface1,gameOverRect1) 
         screen.blit(gameOverSurface2,gameOverRect2) 
 
-
         pygame.display.flip()
         waiting = True
         while waiting:         
@@ -182,6 +176,7 @@ class Main:
                     if event.key == pygame.K_RETURN:
                         waiting = False
         show_menu()
+         
     def draw_grass(self):
         grassColor = (167,209,61)
         for row in range(CELLNUMBER):
@@ -224,9 +219,6 @@ class Main:
         screen.blit(self.fruits[0].apple,appleRect1)     #Display an apple
         screen.blit(self.fruits[1].apple,appleRect2)     
         pygame.draw.rect(screen, (56,74,12),bgRect1,2)   #For border
-
-   
-
 
 #################################################START GAME################################################
 
@@ -287,8 +279,8 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
 
 gameMode = GameMode()
-CELLSIZE = 15
-CELLNUMBER = 40
+CELLSIZE = 20
+CELLNUMBER = 30
 BLUESNAKECOLOR = (35,200,250)
 ORANGESNAKECOLOR = (250,130,10)
 
