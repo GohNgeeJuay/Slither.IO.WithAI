@@ -287,8 +287,8 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
 
 gameMode = GameMode()
-CELLSIZE = 15
-CELLNUMBER = 40
+CELLSIZE = 20
+CELLNUMBER = 30
 BLUESNAKECOLOR = (35,200,250)
 ORANGESNAKECOLOR = (250,130,10)
 
