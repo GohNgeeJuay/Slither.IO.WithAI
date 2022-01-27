@@ -3,11 +3,16 @@
 import pygame, sys, random, os, threading
 import pygame_menu
 from pygame.math import Vector2
+from ai import Agent
 
 
 class GameMode:
-    def __init__(self):
-        self.mode = 0
+    def __init__(self,type):
+        self.mode = type
+
+    def set_mode(self, value, index):
+        self.mode = index
+        print(index)
 
 class Snake:    
     def __init__(self,num):
@@ -109,12 +114,10 @@ class Main:
             snake.move_snake()
         self.check_eat()
         
-        
-
     def draw_elements(self):
         self.draw_grass()
         self.draw_score()
-        #TODO: snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying. Might have to fix using multithreading
+        #snake 1 -> fruit 1 -> snake 2 -> fruit 2. Priority of displaying. 
         for i in range(2):    
             self.snakes[i].draw_snake()
             self.fruits[i].draw_fruit()
@@ -150,10 +153,7 @@ class Main:
                     else:
                         self.show_game_over(1)
         
-                #TODO: Problem might come from here due to for loop sequential check to see if the other snake has
-                #hit. First snake always have priority over the other snake.
-                #Possible solution, multi threading to see which snake's head hit the other snakes body first
-                #check if other snake head hit this snake
+                #First snake always have priority over the other snake.
                 if self.snakes[(index + 1) % 2].body[0] == block:
                     self.show_game_over(index+1)
 
@@ -182,6 +182,7 @@ class Main:
                     if event.key == pygame.K_RETURN:
                         waiting = False
         show_menu()
+
     def draw_grass(self):
         grassColor = (167,209,61)
         for row in range(CELLNUMBER):
@@ -230,11 +231,10 @@ class Main:
 
 #################################################START GAME################################################
 
-def set_mode(value, index):
-    gameMode.mode = index
-
 def start_the_game():
     main_game = Main(gameMode.mode,apple1=blueApple,apple2=redApple)
+    if main_game.mode == 1: #create an agent 
+        aiPlayer = Agent()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -247,34 +247,42 @@ def start_the_game():
                     if main_game.snakes[0].direction.y != 1:
                         main_game.snakes[0].direction = Vector2(0,-1)
                         main_game.snakes[0].moving = True
-                if event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN:
                     if main_game.snakes[0].direction.y != -1:
                         main_game.snakes[0].direction = Vector2(0,1)
                         main_game.snakes[0].moving = True
-                if event.key == pygame.K_LEFT:
+                elif event.key == pygame.K_LEFT:
                     if main_game.snakes[0].direction.x != 1 and main_game.snakes[0].moving == True:
                         main_game.snakes[0].direction = Vector2(-1,0)
                         main_game.snakes[0].moving = True
-                if event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     if main_game.snakes[0].direction.x != -1:
                         main_game.snakes[0].direction = Vector2(1,0)
                         main_game.snakes[0].moving = True
-                if event.key == pygame.K_w:
-                    if main_game.snakes[1].direction.y != 1:
-                        main_game.snakes[1].direction = Vector2(0,-1)
-                        main_game.snakes[1].moving = True
-                if event.key == pygame.K_s:
-                    if main_game.snakes[1].direction.y != -1:
-                        main_game.snakes[1].direction = Vector2(0,1)
-                        main_game.snakes[1].moving = True
-                if event.key == pygame.K_a:
-                    if main_game.snakes[1].direction.x != 1:
-                        main_game.snakes[1].direction = Vector2(-1,0)
-                        main_game.snakes[1].moving = True
-                if event.key == pygame.K_d:
-                    if main_game.snakes[1].direction.x != -1 and main_game.snakes[1].moving == True:
-                        main_game.snakes[1].direction = Vector2(1,0)
-                        main_game.snakes[1].moving = True               
+                
+                elif main_game.mode == 0: #if playing against another player
+                    if event.key == pygame.K_w:
+                        if main_game.snakes[1].direction.y != 1:
+                            main_game.snakes[1].direction = Vector2(0,-1)
+                            main_game.snakes[1].moving = True
+                    elif event.key == pygame.K_s:
+                        if main_game.snakes[1].direction.y != -1:
+                            main_game.snakes[1].direction = Vector2(0,1)
+                            main_game.snakes[1].moving = True
+                    elif event.key == pygame.K_a:
+                        if main_game.snakes[1].direction.x != 1:
+                            main_game.snakes[1].direction = Vector2(-1,0)
+                            main_game.snakes[1].moving = True
+                    elif event.key == pygame.K_d:
+                        if main_game.snakes[1].direction.x != -1 and main_game.snakes[1].moving == True:
+                            main_game.snakes[1].direction = Vector2(1,0)
+                            main_game.snakes[1].moving = True       
+
+            if main_game.mode == 1:   #if playing against an agent
+                #Generate the input array and feed into getAction
+                main_game.snakes[1].direction = aiPlayer.getAction()
+                main_game.snakes[1].moving = True
+                
                 
         screen.fill((116, 196, 45)) #color green for screen
         main_game.draw_elements()
@@ -286,7 +294,7 @@ def start_the_game():
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (300,30)
 pygame.init()
 
-gameMode = GameMode()
+gameMode = GameMode(0)
 CELLSIZE = 20
 CELLNUMBER = 30
 BLUESNAKECOLOR = (35,200,250)
@@ -307,7 +315,7 @@ pygame.time.set_timer(SCREEN_UPDATE,120)
 
 def show_menu():
     menu = pygame_menu.Menu('Welcome to Slither', 400, 300, theme=pygame_menu.themes.THEME_GREEN)
-    menu.add.selector('Mode :', [('2 players', 0),('VS Bot',1)], onchange= set_mode)
+    menu.add.selector('Mode :', [('2 players', 0),('VS Bot',1)], onchange= gameMode.set_mode)
     menu.add.button('Play', start_the_game)
     menu.add.button('Quit', pygame_menu.events.EXIT)
 
