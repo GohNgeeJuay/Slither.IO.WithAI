@@ -23,7 +23,7 @@ from pygame.math import Vector2
 
 class Agent:
 
-    def __init__(self, args, env):
+    def __init__(self):
         pass
         # set hyperparameters
         # self.max_episodes = int(args.max_episodes)

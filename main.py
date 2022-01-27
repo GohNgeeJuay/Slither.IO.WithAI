@@ -242,6 +242,15 @@ def start_the_game():
                 sys.exit()
             if event.type == SCREEN_UPDATE:
                 main_game.update()
+
+                if main_game.mode == 1:   #if playing against an agent
+                    #Generate the input array and feed into getAction
+                    screenArray = pygame.surfarray.array2d(screen)
+                    print(screenArray)
+                    newsurface = pygame.surfarray.make_surface(screenArray)
+                    #main_game.snakes[1].direction = aiPlayer.getAction()
+                    #main_game.snakes[1].moving = True
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     if main_game.snakes[0].direction.y != 1:
@@ -276,13 +285,7 @@ def start_the_game():
                     elif event.key == pygame.K_d:
                         if main_game.snakes[1].direction.x != -1 and main_game.snakes[1].moving == True:
                             main_game.snakes[1].direction = Vector2(1,0)
-                            main_game.snakes[1].moving = True       
-
-            if main_game.mode == 1:   #if playing against an agent
-                #Generate the input array and feed into getAction
-                main_game.snakes[1].direction = aiPlayer.getAction()
-                main_game.snakes[1].moving = True
-                
+                            main_game.snakes[1].moving = True                       
                 
         screen.fill((116, 196, 45)) #color green for screen
         main_game.draw_elements()
